@@ -23,4 +23,5 @@ jobs:
             exit 1
           fi
           echo "OK: only safe <script src> usage detected."
-        
+      - name: Lint CSS
+        run: npx --yes stylelint "**/*.css"
