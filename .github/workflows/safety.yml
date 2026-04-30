@@ -10,16 +10,17 @@ jobs:
       - name: Get the code
         uses: actions/checkout@v5
 
-      - name: Block <script> tags
+      - name: Block disallowed <script> usage
         run: |
           echo "Checking these HTML files:"
           find . -name "*.html" -not -path "./.git/*" -print
           echo ""
-          MATCHES=$(grep -rn "<script" --include="*.html" . || true)
-          if [ -n "$MATCHES" ]; then
-            echo "Detected <script> tags:"
-            echo "$MATCHES"
-            echo "::error title=Script tag detected::Found one or more <script> tags. See log for line numbers."
+          SUSPICIOUS=$(grep -rEn "<script" --include="*.html" . | grep -vE '<script src="[a-zA-Z0-9_.-][a-zA-Z0-9_./-]*"></script>' || true)
+          if [ -n "$SUSPICIOUS" ]; then
+            echo "Detected disallowed <script> usage:"
+            echo "$SUSPICIOUS"
+            echo "::error title=Disallowed script::Use the safe pattern <script src=\"local-file.js\"></script> (no inline JS, no URLs)."
             exit 1
           fi
-          echo "OK: no <script> tags found in HTML files."
+          echo "OK: only safe <script src> usage detected."
+        
